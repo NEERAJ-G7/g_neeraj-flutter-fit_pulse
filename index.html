@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fit Pulse</title>
+<style>
+:root{--bg:#f7f7fb;--card:#fff;--text:#1d1d2b;--muted:#6b6b80;--p:#ff4d6d;--p2:#ff9f1c;--line:#e6e6ef}
+body.dark{--bg:#14141c;--card:#1f1f2b;--text:#f1f1f6;--muted:#a0a0b5;--line:#2e2e3d}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+.hidden{display:none!important}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);animation:pop .4s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.btn{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border:0;border-radius:14px;padding:12px 22px;font-weight:700;cursor:pointer;transition:transform .15s}
+.btn:hover{transform:scale(1.04)}
+.btn.ghost{background:none;color:var(--p);border:1px solid var(--p)}
+input,select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);margin-top:4px}
+label{display:block;margin-top:14px;font-size:.9rem;color:var(--muted)}
+.err{color:#e5383b;font-size:.8rem;min-height:1em}
+/* auth */
+#auth{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.brand{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.brand h1{font-size:2.6rem;margin:8px 0}
+.formwrap{display:flex;align-items:center;justify-content:center;padding:24px}
+.formwrap form{width:100%;max-width:400px}
+/* app layout */
+#app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{background:var(--card);padding:20px 12px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+nav .logo{font-size:1.4rem;font-weight:800;color:var(--p);padding:0 12px 16px}
+nav button{background:none;border:0;text-align:left;padding:12px;border-radius:12px;color:var(--text);cursor:pointer;font-weight:600}
+nav button.on{background:var(--p);color:#fff}
+main{padding:24px;max-width:1100px;width:100%;margin:0 auto}
+h2{margin:0 0 16px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(4,1fr);margin:16px 0}
+.stat b{display:block;font-size:1.6rem}.stat span{color:var(--muted);font-size:.85rem}
+.ring{display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:14;stroke-linecap:round}
+.ring .fg{stroke:var(--p);transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+.rt{position:relative;width:170px;height:170px;display:grid;place-items:center;text-align:center}
+.rt svg{position:absolute;inset:0}
+.glasses{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.glass{width:42px;height:50px;border-radius:12px;background:var(--line);cursor:pointer;transition:all .25s;display:grid;place-items:center}
+.glass.on{background:#4cc9f0}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:20px;padding:8px 16px;cursor:pointer}
+.chip.on{background:var(--p);color:#fff;border-color:var(--p)}
+.wo{display:flex;align-items:center;gap:14px;margin-bottom:10px;cursor:default}
+.wo .ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem}
+.wo .info{flex:1}.wo small{color:var(--muted)}
+.wo.done .info b{text-decoration:line-through;opacity:.6}
+.x{background:none;border:0;cursor:pointer;font-size:1.1rem}
+.bars{display:flex;align-items:flex-end;gap:10px;height:190px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-size:.75rem;color:var(--muted)}
+.bar i{width:70%;max-width:30px;border-radius:8px;background:var(--p);opacity:.4;min-height:4px;transition:height .7s ease}
+.bar:last-child i{opacity:1}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:16px;z-index:10;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.modal .card{width:100%;max-width:440px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:20px;z-index:20;animation:pop .3s}
+.view{animation:fade .35s}
+@media(max-width:899px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){
+ #auth{grid-template-columns:1fr}.brand{display:none}
+ #app{grid-template-columns:1fr;padding-bottom:70px}
+ nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;justify-content:space-around;padding:6px;z-index:5;border-right:0;border-top:1px solid var(--line)}
+ nav .logo{display:none}nav button{text-align:center;padding:10px 8px;font-size:.8rem}
+}
+@media(min-width:701px) and (max-width:899px){#app{grid-template-columns:90px 1fr}nav button{font-size:.75rem;text-align:center}.logo{font-size:1rem!important}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN / SIGN UP -->
+<section id="auth">
+  <div class="brand"><div style="font-size:5rem">💓</div><h1>Fit Pulse</h1><p>Track. Train. Transform.</p></div>
+  <div class="formwrap">
+    <form id="authForm" novalidate>
+      <h2 id="authTitle" style="font-size:2rem;text-align:center">Welcome back</h2>
+      <div id="nameRow" class="hidden"><label>Full name<input id="aName"></label><div class="err" id="eName"></div></div>
+      <label>Email<input id="aEmail" type="email"></label><div class="err" id="eEmail"></div>
+      <label>Password<input id="aPass" type="password"></label><div class="err" id="ePass"></div>
+      <p style="text-align:center"><button class="btn" id="authBtn">Log in</button></p>
+      <p style="text-align:center"><a href="#" id="authToggle" style="color:var(--p)">New here? Create an account</a></p>
+    </form>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <nav>
+    <div class="logo">💓 Fit Pulse</div>
+    <button data-v="home">🏠 Home</button>
+    <button data-v="workouts">🏋️ Workouts</button>
+    <button data-v="progress">📊 Progress</button>
+    <button data-v="profile">👤 Profile</button>
+  </nav>
+  <main id="view"></main>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+const TYPES={Cardio:['🏃','#4361ee'],Strength:['🏋️','#ff4d6d'],Yoga:['🧘','#2ec4b6'],HIIT:['🔥','#ff9f1c']};
+const $=s=>document.querySelector(s);
+const day=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d.getTime()};
+const defaults={user:null,name:'Athlete',weight:70,height:170,goal:10000,steps:4200,water:3,dark:false,
+ workouts:[
+  {id:1,name:'Morning Run',type:'Cardio',min:30,cal:280,date:day(0),done:false},
+  {id:2,name:'Upper Body Strength',type:'Strength',min:45,cal:320,date:day(0),done:false},
+  {id:3,name:'Sunrise Yoga',type:'Yoga',min:25,cal:110,date:day(1),done:true},
+  {id:4,name:'HIIT Blast',type:'HIIT',min:20,cal:250,date:day(2),done:true},
+  {id:5,name:'Evening Jog',type:'Cardio',min:40,cal:350,date:day(3),done:true},
+  {id:6,name:'Leg Day',type:'Strength',min:50,cal:400,date:day(5),done:true}]};
+let S;
+try{S=JSON.parse(localStorage.getItem('fitpulse'))||defaults}catch(e){S=defaults}
+const save=()=>{try{localStorage.setItem('fitpulse',JSON.stringify(S))}catch(e){}};
+let view='home',filter='All';
+
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),2000)}
+function applyTheme(){document.body.classList.toggle('dark',S.dark)}
+
+/* ---------- AUTH ---------- */
+let isLogin=true;
+$('#authToggle').onclick=e=>{e.preventDefault();isLogin=!isLogin;
+ $('#authTitle').textContent=isLogin?'Welcome back':'Create account';
+ $('#authBtn').textContent=isLogin?'Log in':'Sign up';
+ $('#nameRow').classList.toggle('hidden',isLogin);
+ $('#authToggle').textContent=isLogin?'New here? Create an account':'Have an account? Log in'};
+$('#authForm').onsubmit=e=>{e.preventDefault();
+ const n=$('#aName').value.trim(),m=$('#aEmail').value.trim(),p=$('#aPass').value;let ok=true;
+ $('#eName').textContent=$('#eEmail').textContent=$('#ePass').textContent='';
+ if(!isLogin&&n.length<2){$('#eName').textContent='Enter your name';ok=false}
+ if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)){$('#eEmail').textContent='Enter a valid email';ok=false}
+ if(p.length<6){$('#ePass').textContent='At least 6 characters';ok=false}
+ if(!ok)return;
+ S.user=m;if(n)S.name=n;save();start()};
+
+function start(){
+ applyTheme();
+ $('#auth').classList.toggle('hidden',!!S.user);
+ $('#app').classList.toggle('hidden',!S.user);
+ if(S.user)go(view)}
+
+/* ---------- NAV ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+function go(v){view=v;
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ render()}
+
+/* ---------- HELPERS ---------- */
+const isToday=t=>t===day(0);
+const doneW=()=>S.workouts.filter(w=>w.done);
+const sum=(a,k)=>a.reduce((x,w)=>x+w[k],0);
+const bmi=()=>S.weight/Math.pow(S.height/100,2);
+const bmiCat=b=>b<18.5?'Underweight':b<25?'Healthy':b<30?'Overweight':'Obese';
+const todayCal=()=>sum(doneW().filter(w=>isToday(w.date)),'cal')+Math.round(S.steps*0.04);
+const fmt=t=>new Date(t).toLocaleDateString();
+function woRow(w,full){const [ic,c]=TYPES[w.type];
+ return `<div class="card wo ${w.done?'done':''}"><div class="ic" style="background:${c}26">${ic}</div>
+ <div class="info"><b>${w.name}</b><br><small>${full?w.type+' • ':''}${w.min} min • ${w.cal} kcal${full?' • '+fmt(w.date):''}</small></div>
+ <input type="checkbox" style="width:22px" ${w.done?'checked':''} onchange="toggle(${w.id})">
+ ${full?`<button class="x" title="Delete" onclick="del(${w.id})">🗑️</button>`:''}</div>`}
+function toggle(id){const w=S.workouts.find(x=>x.id===id);w.done=!w.done;save();render()}
+function del(id){S.workouts=S.workouts.filter(x=>x.id!==id);save();render();toast('Workout deleted')}
+
+/* ---------- VIEWS ---------- */
+function render(){const v=$('#view');v.className='';void v.offsetWidth;v.className='view';
+ ({home,workouts,progress,profile})[view](v)}
+
+function home(v){
+ const p=Math.min(1,S.steps/S.goal),C=2*Math.PI*71,pend=S.workouts.filter(w=>!w.done&&isToday(w.date));
+ v.innerHTML=`<h2>Hi, ${S.name} 👋</h2>
+ <div class="card ring"><div class="rt"><svg width="170" height="170"><circle cx="85" cy="85" r="71" stroke="var(--line)"/><circle class="fg" id="fg" cx="85" cy="85" r="71" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg>
+ <div><b style="font-size:1.8rem">${S.steps}</b><br><small>of ${S.goal} steps</small></div></div>
+ <div><h3 style="margin-top:0">Daily step goal</h3><p>${Math.round(p*100)}% complete</p>
+ <button class="btn" onclick="S.steps+=500;save();render()">+ 500 steps</button> <button class="btn ghost" onclick="S.steps=0;save();render()">Reset</button></div></div>
+ <div class="grid">
+  <div class="card stat"><span>🔥 Calories today</span><b>${todayCal()}</b></div>
+  <div class="card stat"><span>⏱️ Active minutes</span><b>${sum(doneW().filter(w=>isToday(w.date)),'min')}</b></div>
+  <div class="card stat"><span>✅ Workouts done</span><b>${doneW().length}</b></div>
+  <div class="card stat"><span>⚖️ BMI</span><b>${bmi().toFixed(1)}</b></div></div>
+ <div class="card"><b>Water • ${S.water}/8 glasses</b><div class="glasses">
+  ${[...Array(8)].map((_,i)=>`<div class="glass ${i<S.water?'on':''}" onclick="S.water=S.water===${i+1}?${i}:${i+1};save();render()">💧</div>`).join('')}</div></div>
+ <h3>Today's plan</h3>${pend.length?pend.map(w=>woRow(w)).join(''):'<div class="card">All done for today. Great job! 🎉</div>'}`;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=$('#fg');if(f)f.style.strokeDashoffset=C*(1-p)}))}
+
+function workouts(v){
+ const list=S.workouts.filter(w=>filter==='All'||w.type===filter);
+ v.innerHTML=`<div class="top"><h2 style="margin:0">Workouts</h2><button class="btn" onclick="openAdd()">+ Add</button></div>
+ <div class="chips">${['All',...Object.keys(TYPES)].map(t=>`<button class="chip ${t===filter?'on':''}" onclick="filter='${t}';render()">${t}</button>`).join('')}</div>
+ ${list.length?list.map(w=>woRow(w,1)).join(''):'<div class="card">No workouts yet. Tap Add to create one.</div>'}`}
+
+function openAdd(){
+ $('#modalRoot').innerHTML=`<div class="modal" onclick="if(event.target===this)closeM()"><form class="card" id="wf" novalidate>
+ <h2>New workout</h2>
+ <label>Name<input id="wName"></label><div class="err" id="e1"></div>
+ <label>Type<select id="wType">${Object.keys(TYPES).map(t=>`<option>${t}</option>`).join('')}</select></label>
+ <label>Duration (minutes)<input id="wMin" type="number"></label><div class="err" id="e2"></div>
+ <label>Calories (kcal)<input id="wCal" type="number"></label><div class="err" id="e3"></div>
+ <label>Date<input id="wDate" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+ <p style="display:flex;gap:10px;justify-content:flex-end"><button type="button" class="btn ghost" onclick="closeM()">Cancel</button><button class="btn">Save</button></p></form></div>`;
+ $('#wf').onsubmit=e=>{e.preventDefault();
+  const n=$('#wName').value.trim(),m=+$('#wMin').value,c=+$('#wCal').value;let ok=true;
+  $('#e1').textContent=$('#e2').textContent=$('#e3').textContent='';
+  if(n.length<3){$('#e1').textContent='At least 3 characters';ok=false}
+  if(!Number.isInteger(m)||m<1||m>300){$('#e2').textContent='Whole number 1–300';ok=false}
+  if(!Number.isInteger(c)||c<1||c>3000){$('#e3').textContent='Whole number 1–3000';ok=false}
+  if(!ok)return;
+  const d=new Date($('#wDate').value+'T00:00');d.setHours(0,0,0,0);
+  S.workouts.unshift({id:Date.now(),name:n,type:$('#wType').value,min:m,cal:c,date:d.getTime(),done:false});
+  save();closeM();render();toast('Workout added')}}
+function closeM(){$('#modalRoot').innerHTML=''}
+
+function progress(v){
+ const vals=[...Array(7)].map((_,i)=>sum(doneW().filter(w=>w.date===day(6-i)),'min')),mx=Math.max(1,...vals);
+ const names=[...Array(7)].map((_,i)=>new Date(day(6-i)).toLocaleDateString(undefined,{weekday:'short'}));
+ const b=bmi(),pos=Math.min(100,Math.max(0,(b-15)/20*100));
+ v.innerHTML=`<h2>Progress</h2>
+ <div class="card"><b>Active minutes – last 7 days</b><div class="bars" style="margin-top:16px" id="bars">
+ ${vals.map((x,i)=>`<div class="bar">${x}<i data-h="${x/mx*130}" style="height:0"></i>${names[i]}</div>`).join('')}</div></div>
+ <div class="grid" style="grid-template-columns:repeat(2,1fr)">
+  <div class="card stat"><span>⏱️ Total minutes</span><b>${sum(doneW(),'min')}</b></div>
+  <div class="card stat"><span>🔥 Total calories</span><b>${sum(doneW(),'cal')}</b></div></div>
+ <div class="card"><b>Body Mass Index</b><p style="font-size:1.5rem;margin:8px 0">${b.toFixed(1)} • ${bmiCat(b)}</p>
+ <div style="height:10px;border-radius:8px;background:var(--line);overflow:hidden"><div id="bb" style="height:100%;width:0;background:var(--p);transition:width .7s"></div></div>
+ <div style="display:flex;justify-content:space-between;color:var(--muted)"><span>15</span><span>25</span><span>35</span></div></div>`;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{document.querySelectorAll('#bars i').forEach(i=>i.style.height=Math.max(4,i.dataset.h)+'px');$('#bb').style.width=pos+'%'}))}
+
+function profile(v){
+ v.innerHTML=`<h2>Profile</h2><form class="card" id="pf" novalidate style="max-width:520px">
+ <div style="text-align:center"><div style="width:84px;height:84px;border-radius:50%;background:var(--p);color:#fff;font-size:2.2rem;font-weight:700;display:inline-grid;place-items:center">${(S.name[0]||'?').toUpperCase()}</div><p>${S.user||''}</p></div>
+ <label>Name<input id="pName" value="${S.name}"></label><div class="err" id="p1"></div>
+ <label>Weight (kg)<input id="pW" type="number" step="any" value="${S.weight}"></label><div class="err" id="p2"></div>
+ <label>Height (cm)<input id="pH" type="number" step="any" value="${S.height}"></label><div class="err" id="p3"></div>
+ <label>Daily step goal<input id="pG" type="number" value="${S.goal}"></label><div class="err" id="p4"></div>
+ <p><button class="btn">Save changes</button></p>
+ <label style="display:flex;justify-content:space-between;align-items:center;color:var(--text)">🌙 Dark mode<input type="checkbox" style="width:22px" ${S.dark?'checked':''} onchange="S.dark=this.checked;save();applyTheme()"></label>
+ <p><button type="button" class="btn ghost" onclick="S.user=null;save();start()">Log out</button></p></form>`;
+ $('#pf').onsubmit=e=>{e.preventDefault();
+  const n=$('#pName').value.trim(),w=+$('#pW').value,h=+$('#pH').value,g=+$('#pG').value;let ok=true;
+  ['p1','p2','p3','p4'].forEach(i=>$('#'+i).textContent='');
+  if(n.length<2){$('#p1').textContent='Enter your name';ok=false}
+  if(!(w>=20&&w<=300)){$('#p2').textContent='Between 20 and 300';ok=false}
+  if(!(h>=100&&h<=250)){$('#p3').textContent='Between 100 and 250';ok=false}
+  if(!(g>=1000&&g<=50000)){$('#p4').textContent='Between 1000 and 50000';ok=false}
+  if(!ok)return;
+  Object.assign(S,{name:n,weight:w,height:h,goal:Math.round(g)});save();toast('Profile updated');render()}}
+
+start();
+</script>
+</body>
+</html>
