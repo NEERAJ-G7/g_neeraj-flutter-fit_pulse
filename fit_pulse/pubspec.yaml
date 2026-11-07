@@ -1,0 +1,15 @@
+name: fit_pulse
+description: Fit Pulse - a responsive fitness tracker built with Flutter.
+publish_to: 'none'
+version: 1.0.0
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true
